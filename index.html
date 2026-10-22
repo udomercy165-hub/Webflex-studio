@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Webflex Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#120e1a;--sf:#1c1727;--sf2:#262033;--tx:#f4eee4;--mu:#a69fb4;--ac:#f0b24a;--ac2:#e04f7a;--ln:#352e45;--ok:#5fc98f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#120e1a}}
+*{box-sizing:border-box}html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 'DM Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.1;margin:0 0 .5em}
+h1{font-size:clamp(2.3rem,8vw,5rem);font-weight:800}h2{font-size:1.7rem}h3{font-size:1.15rem}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+header{position:sticky;top:0;z-index:20;background:#120e1af2;border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:12px;padding:10px 16px}
+.logo{font-family:Fraunces,serif;font-weight:800;font-size:1.2rem;letter-spacing:.02em;color:var(--ac)}
+nav{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+nav a{padding:8px 11px;border-radius:99px;white-space:nowrap;font-size:.92rem;color:var(--mu)}
+nav a.on,nav a:hover{color:var(--tx);background:var(--sf2)}
+nav a.cta{background:var(--ac);color:#1a1205;font-weight:700}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+.hero{border-radius:20px;padding:clamp(28px,7vw,80px);margin:0 -4px 36px;background:radial-gradient(900px 400px at 85% 0,#e04f7a55,transparent),radial-gradient(700px 400px at 0 100%,#f0b24a33,transparent),var(--sf);border:1px solid var(--ln)}
+.hero p{max-width:560px;color:var(--mu);font-size:1.1rem}
+.btn{display:inline-block;border:0;cursor:pointer;padding:12px 20px;border-radius:10px;background:var(--ac);color:#1a1205;font-weight:700;margin:4px 8px 4px 0}
+.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--ln)}.btn.sm{padding:7px 12px;font-size:.88rem}
+section{margin:0 0 40px}.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.row a{color:var(--ac);font-size:.9rem}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.grid.w{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;overflow:hidden;display:block}
+.card .b{padding:12px}.card p{margin:.2em 0;color:var(--mu);font-size:.88rem}
+.poster{display:flex;align-items:flex-end;padding:12px;font-family:Fraunces,serif;font-weight:800;font-size:1.2rem;line-height:1.05;position:relative}
+.poster small{position:absolute;top:8px;right:8px;font:700 .65rem 'DM Sans';background:#000a;padding:3px 7px;border-radius:99px}
+.h169{aspect-ratio:16/9}.v916{aspect-ratio:9/16}.p23{aspect-ratio:2/3}
+.tag{display:inline-block;font-size:.75rem;padding:2px 9px;border-radius:99px;background:var(--sf2);color:var(--mu);margin-right:4px}
+.tag.pm{background:var(--ac);color:#1a1205;font-weight:700}.tag.fr{background:#1f4d37;color:#bdf1d4}
+.banner{border-radius:18px;padding:28px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.b1{background:linear-gradient(120deg,#6b2146,#2a1a4a)}.b2{background:linear-gradient(120deg,#16384a,#1c1727)}
+.banner h2{margin:0 0 6px}.banner p{margin:0;color:#e6dff0;max-width:520px}
+.av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-family:Fraunces;font-weight:800;color:#fff;flex:none}
+.player{background:#000;border:1px solid var(--ln);border-radius:12px;display:grid;place-items:center;text-align:center;color:var(--mu);margin:0 auto;max-width:100%;padding:16px;position:relative;overflow:hidden}
+.player video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.two{display:grid;gap:24px;grid-template-columns:1fr}@media(min-width:860px){.two{grid-template-columns:2fr 1fr}}
+.note{border:1px dashed var(--ac);background:#f0b24a14;border-radius:10px;padding:10px 14px;font-size:.88rem;color:#f5dca5;margin:12px 0}
+form label{display:block;font-size:.88rem;color:var(--mu);margin:12px 0 4px}
+input,select,textarea{width:100%;background:var(--sf2);border:1px solid var(--ln);border-radius:8px;padding:10px}
+input.bad,select.bad,textarea.bad{border-color:var(--ac2)}.err{color:#ff8fae;font-size:.8rem;min-height:1em}
+.fg{display:grid;gap:0 16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--ln)}
+.wrap{overflow-x:auto}
+.bar{height:10px;border-radius:9px;background:var(--sf2);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.big{font:800 3rem Fraunces;color:var(--ac)}
+.steps{display:flex;flex-wrap:wrap;gap:6px}.steps span{font-size:.78rem;padding:4px 10px;border-radius:99px;background:var(--sf2);color:var(--mu)}.steps span.d{background:#1f4d37;color:#bdf1d4}.steps span.c{background:var(--ac);color:#1a1205;font-weight:700}
+.cats{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:#111;padding:10px 18px;border-radius:99px;z-index:50;font-weight:700}
+.shorts{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px}.shorts .card{flex:0 0 min(280px,78vw);scroll-snap-align:center}
+@media(prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
+footer{border-top:1px solid var(--ln);padding:24px 16px;text-align:center;color:var(--mu);font-size:.85rem}
+</style></head><body>
+<header><a class="logo" href="#home">WEBFLEX STUDIO</a><nav id="nav" aria-label="Main"></nav></header>
+<main id="app" tabindex="-1"></main>
+<footer>Webflex Studio is a front-end prototype. All films, creators, stories and figures are fictional demonstration content. No backend, accounts, streaming or payments are connected yet.</footer>
+<script>
+const $=(s,r=document)=>r.querySelector(s),app=$('#app');
+const hue=(h,h2)=>`background:linear-gradient(160deg,hsl(${h} 60% 35%),hsl(${h2||h+60} 70% 12%))`;
+const M=[
+['aurora','Aurora Protocol','Sci-fi','h',210,'Nova Quill','A salvage pilot finds a signal that rewrites the night sky.','free'],
+['glass','The Glass Orchard','Fantasy','v',140,'Mira Okon','An orchard grows memories instead of fruit.','premium'],
+['harbor','Harbor of Salt','Drama','h',20,'Tobi Adeyemi','Three siblings reopen a drowned fishing town.','free'],
+['clock','Clockwork Lullaby','Animation','v',280,'Nova Quill','A toymaker’s robots learn to dream.','premium-pts'],
+['ember','Ember Courier','Action','h',0,'Sol Reyes','A rooftop courier outruns a city that never sleeps.','sub'],
+['velvet','Velvet Alibi','Mystery','h',330,'Mira Okon','Everyone at the masquerade has a motive.','free'],
+['tide','Tidebound','Fantasy','v',180,'Sol Reyes','The moon owes the sea a favour.','premium-pts'],
+['paper','Paper Cities','Sci-fi','h',50,'Tobi Adeyemi','Folded worlds, one fragile map.','free']].map(a=>({id:a[0],t:a[1],g:a[2],f:a[3],h:a[4],c:a[5],d:a[6],a:a[7]}));
+const S=[['dust','Dust of Kings','Fantasy',30,'Mira Okon'],['love','Letters to Lagos','Romance',340,'Tobi Adeyemi'],['hollow','The Hollow Year','Drama',200,'Sol Reyes'],['star','Starlight Ledger','Science fiction',230,'Nova Quill'],['door','The Eleventh Door','Mystery',280,'Mira Okon']].map(a=>({id:a[0],t:a[1],g:a[2],h:a[3],c:a[4]}));
+const C=[['Nova Quill',210,'Sci-fi filmmaker blending hand-drawn texture with AI-generated worlds.'],['Mira Okon',140,'Fantasy and mystery storyteller who writes the script before she prompts a single frame.'],['Tobi Adeyemi',20,'Drama director focused on coastal communities and family stories.'],['Sol Reyes',0,'Action animator building kinetic short films for phones first.']].map(a=>({n:a[0],h:a[1],b:a[2],id:a[0].split(' ')[0].toLowerCase()}));
+const CATS=['AI Filmmaking','Storytelling','Art & Design','Animation','Ideas & Feedback','Collaboration','Creative Challenges'];
+const T=[['How do you keep characters consistent across scenes?','AI Filmmaking','Nova Quill',14],['Serial fiction: weekly or monthly chapters?','Storytelling','Mira Okon',9],['Looking for a sound designer for a 6-minute short','Collaboration','Sol Reyes',5],['Official challenge: one location, three moods','Creative Challenges','Webflex Team',22]];
+const st=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
+const toast=m=>{const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600)};
+const acc=a=>a==='free'?'<span class="tag fr">Free</span>':a==='sub'?'<span class="tag pm">Premium · subscription</span>':a==='premium'?'<span class="tag pm">Premium</span>':'<span class="tag pm">Premium · points-eligible</span>';
+const poster=(m,r)=>`<div class="poster ${r||(m.f==='v'?'v916':'h169')}" style="${hue(m.h)}" role="img" aria-label="Demo artwork for ${m.t}"><small>${m.f==='v'?'9:16':'16:9'}</small>${m.t}</div>`;
+const mcard=m=>`<a class="card" href="#watch/${m.id}">${poster(m,m.f==='v'?'p23':'h169')}<div class="b"><strong>${m.t}</strong><p>${m.g} · ${m.c}</p>${acc(m.a)}</div></a>`;
+const av=c=>`<span class="av" style="background:hsl(${c.h} 55% 35%)">${c.n[0]}</span>`;
+const ccard=c=>`<a class="card b" href="#creator/${c.id}" style="display:flex;gap:12px">${av(c)}<div><strong>${c.n}</strong><p>${c.b}</p></div></a>`;
+const scard=s=>`<a class="card" href="#read/${s.id}"><div class="poster p23" style="${hue(s.h)}">${s.t}</div><div class="b"><strong>${s.t}</strong><p>${s.g} · ${s.c}</p></div></a>`;
+const sec=(t,l,body)=>`<section><div class="row"><h2>${t}</h2>${l?`<a href="#${l}">See all</a>`:''}</div>${body}</section>`;
+const NAV=[['home','Home'],['movies','AI Movies'],['shorts','Webflex Shorts'],['stories','Stories'],['community','Community'],['creators','Creators'],['rewards','Webflex Rewards'],['ads','Webflex Ads'],['signin','Sign In'],['join','Join as a Creator']];
+const pts=()=>st('pts')??120, hist=()=>st('hist')||[{d:'Demo',a:'Starting balance (illustrative)',p:120}];
+const PM=[['clock','Clockwork Lullaby',300],['tide','Tidebound',450]];
+const demo='<div class="note">Demonstration interface. No accounts, database or payment provider is connected, so nothing here is stored on a server or publicly visible.</div>';
+const V={
+home:()=>`<div class="hero"><h1>YOUR IMAGINATION. YOUR STORIES. YOUR CINEMA.</h1><p>Discover extraordinary AI-generated movies, explore original stories, and meet the creators bringing impossible worlds to life.</p><a class="btn" href="#movies">Explore Movies</a><a class="btn ghost" href="#join">Become a Creator</a></div>
+${sec('Trending AI Movies','movies','<div class="grid">'+M.slice(0,4).map(mcard).join('')+'</div>')}
+${sec('Recently Released','movies','<div class="grid">'+M.slice(4).map(mcard).join('')+'</div>')}
+${sec('Webflex Shorts','shorts','<div class="shorts">'+M.filter(m=>m.f==='v').concat(M.slice(0,1)).map(mcard).join('')+'</div>')}
+${sec('Discover Original Stories','stories','<div class="grid">'+S.map(scard).join('')+'</div>')}
+${sec('Featured Creators','creators','<div class="grid w">'+C.map(ccard).join('')+'</div>')}
+${sec('Community Highlights','community','<div class="card b">'+T.slice(0,3).map(t=>`<p><strong style="color:var(--tx)">${t[0]}</strong><br>${t[1]} · ${t[3]} replies</p>`).join('')+'</div>')}
+<section class="banner b1"><div><h2>YOUR NEXT MOVIE COULD BE ON YOU.</h2><p>Collect Webflex Points and work toward unlocking eligible premium entertainment.</p></div><a class="btn" href="#rewards">See Webflex Rewards</a></section><br>
+<section class="banner b2"><div><h2>Promote your work on Webflex Ads.</h2><p>Businesses and creators can apply to place an advertisement. Every ad is subject to approval.</p></div><a class="btn" href="#ads">Explore advertising</a></section>`,
+movies:()=>`<h1 style="font-size:2.6rem">AI Movies</h1><p style="color:var(--mu)">Cinematic films in horizontal and vertical formats. Access labels show whether a film is free, premium, subscription-only or points-eligible.</p><div class="grid">${M.map(mcard).join('')}</div>`,
+watch:id=>{const m=M.find(x=>x.id===id)||M[0],c=C.find(x=>x.n===m.c),h=m.f==='h';
+return `<div class="two"><div><div class="player" style="aspect-ratio:${h?'16/9':'9/16'};${h?'width:100%':'max-height:75vh;width:auto;height:75vh'};${hue(m.h)}"><video controls playsinline preload="none" aria-label="${m.t} video player"></video><div style="position:relative;z-index:1"><strong style="color:#fff">${m.t}</strong><br>No video source is connected yet.<br>This frame keeps the film’s original ${h?'16:9':'9:16'} ratio with no stretching or cropping.</div></div>
+<h1 style="font-size:2.2rem;margin-top:16px">${m.t}</h1><p>${acc(m.a)}<span class="tag">${m.g}</span></p><p>${m.d}</p>
+${m.a!=='free'?`<div class="note">${m.a==='premium-pts'?'Eligible for a points unlock in Webflex Rewards. Unlocking is not yet enabled.':m.a==='sub'?'Subscription access. Subscriptions are not yet available.':'Premium title. Purchase is not yet available, and this title can’t be unlocked with points.'}</div>`:''}
+<a class="card b" href="#creator/${c.id}" style="display:flex;gap:12px;margin:12px 0">${av(c)}<div><strong>${c.n}</strong><p>View creator profile</p></div></a>
+<div><button class="btn sm ghost" id="like" aria-pressed="false">♡ Like <span>0</span></button></div>
+<h3 style="margin-top:20px">Comments</h3>${demo}<form id="cf"><label for="ct">Add a comment</label><textarea id="ct" rows="2" maxlength="300"></textarea><div class="err" id="ce"></div><button class="btn sm">Post demo comment</button></form><div id="cl"></div></div>
+<aside><h3>Related movies</h3><div class="grid" style="grid-template-columns:1fr 1fr">${M.filter(x=>x.id!==m.id).slice(0,4).map(mcard).join('')}</div></aside></div>`},
+shorts:()=>`<h1 style="font-size:2.6rem">Webflex Shorts</h1><p style="color:var(--mu)">Swipe sideways through quick watches. Vertical and horizontal videos keep their own shape.</p><div class="shorts">${M.map(m=>`<div class="card">${poster(m)}<div class="b"><strong>${m.t}</strong><p>${m.c} · ${m.f==='v'?'Vertical':'Horizontal'}</p><a class="btn sm" href="#watch/${m.id}">Watch full page</a></div></div>`).join('')}</div>${demo}`,
+stories:()=>`<h1 style="font-size:2.6rem">Stories</h1><p style="color:var(--mu)">Original written fiction and serials across fantasy, romance, drama, science fiction and mystery.</p><div class="grid">${S.map(scard).join('')}</div>`,
+read:id=>{const s=S.find(x=>x.id===id)||S[0];return `<div style="max-width:640px;margin:auto"><div class="poster h169" style="${hue(s.h)}">${s.t}</div><h1 style="font-size:2.4rem;margin-top:18px">${s.t}</h1><p><span class="tag">${s.g}</span> by ${s.c}</p><div style="font-family:Fraunces,serif;font-size:1.1rem;line-height:1.8"><p>Chapter 1 (sample text). The morning the lamps went out, nobody in the valley noticed at first. Light had always arrived late there, and people had learned to work by its promise.</p><p>Only the youngest, Ife, stood at the window and counted the hours that did not come. She wrote down every one.</p></div><p class="note">Placeholder chapter. Full serialized reading needs a content backend.</p><a class="btn ghost" href="#stories">Back to stories</a></div>`},
+community:()=>`<h1 style="font-size:2.6rem">WEBFLEX COMMUNITY</h1>${demo}<div class="cats">${CATS.map(c=>`<div class="card b"><strong>${c}</strong><p>${T.filter(t=>t[1]===c).length} demo threads</p></div>`).join('')}</div><h2 style="margin-top:30px">Latest discussions</h2>${T.map((t,i)=>`<div class="card b" style="margin-bottom:10px"><strong>${t[0]}</strong><p>${t[1]} · by ${t[2]} · ${t[3]} replies</p><button class="btn sm ghost lk" aria-pressed="false">♡ <span>${t[3]}</span></button> <button class="btn sm ghost" onclick="toast('Replies need accounts and a database')">Reply</button></div>`).join('')}`,
+creators:()=>`<h1 style="font-size:2.6rem">Creators</h1><p style="color:var(--mu)">Fictional sample creators for demonstration.</p><div class="grid w">${C.map(ccard).join('')}</div>`,
+creator:id=>{const c=C.find(x=>x.id===id)||C[0];const ms=M.filter(m=>m.c===c.n);return `<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${av(c).replace('width','width')}<div><h1 style="font-size:2.2rem;margin:0">${c.n}</h1><p style="margin:0;color:var(--mu)">${c.b}</p></div><button class="btn" id="fol" aria-pressed="false">Follow</button></div>${sec('Published movies','',`<div class="grid">${ms.filter(m=>m.f==='h').map(mcard).join('')||'<p>No movies yet.</p>'}</div>`)}${sec('Short videos','',`<div class="grid">${ms.filter(m=>m.f==='v').map(mcard).join('')||'<p>No shorts yet.</p>'}</div>`)}${sec('Written stories','',`<div class="grid">${S.filter(s=>s.c===c.n).map(scard).join('')||'<p>No stories yet.</p>'}</div>`)}${sec('Community contributions','',`<div class="card b">${T.filter(t=>t[2]===c.n).map(t=>`<p>${t[0]} (${t[1]})</p>`).join('')||'<p>No posts yet.</p>'}</div>`)}`},
+rewards:()=>{const p=pts(),today=new Date().toISOString().slice(0,10),claimed=st('daily')===today,H=hist();
+return `<div class="hero"><h1>WATCH. DISCOVER. COLLECT. UNLOCK.</h1><p>Points are platform rewards, not cash, and can’t be withdrawn as money. Values shown are illustrative.</p><div class="big" id="pt">${p}</div><span>Webflex Points (demo balance, this browser only)</span></div>
+<div class="note">Balances and redemption must be verified by a backend. Nothing here is a confirmed transaction.</div>
+<section class="two"><div class="card b"><h3>Daily reward</h3><p>Claim once per day for 10 points.</p><button class="btn" id="claim" ${claimed?'disabled':''}>${claimed?'Claimed today':'Claim 10 points'}</button></div><div class="card b"><h3>Progress to next reward</h3>${(()=>{const n=PM.find(x=>x[2]>p)||PM[1];return `<p>${n[1]}: ${Math.min(p,n[2])} / ${n[2]} points</p><div class="bar"><i style="width:${Math.min(100,p/n[2]*100)}%"></i></div>`})()}</div></section>
+<section><h2>Activities</h2><div class="grid w"><div class="card b"><strong>Daily reward</strong><p>${claimed?'Completed today':'Available · 10 pts'}</p></div><div class="card b"><strong>Discover a featured movie</strong><p>Available · 5 pts, once per title</p></div><div class="card b"><strong>Official creative challenge</strong><p>Available · 25 pts, reviewed by Webflex</p></div><div class="card b"><strong>Likes and comments</strong><p>Not rewarded, to prevent abuse</p></div></div></section>
+<section><h2>Eligible premium movies</h2><div class="grid w">${PM.map(x=>`<div class="card b"><strong>${x[1]}</strong><p>${x[2]} points required</p><button class="btn sm" disabled>Unlock (not yet enabled)</button></div>`).join('')}</div><p style="color:var(--mu);font-size:.88rem">Other premium titles can’t be unlocked with points.</p></section>
+<section><h2>Points history</h2><div class="wrap"><table><tr><th>When</th><th>Activity</th><th>Points</th></tr>${H.map(h=>`<tr><td>${h.d}</td><td>${h.a}</td><td>+${h.p}</td></tr>`).join('')}</table></div></section>`},
+ads:()=>`<div class="hero"><h1>PROMOTE YOUR BRAND ON WEBFLEX STUDIO.</h1><p>Discover advertising opportunities for your business, creative project, product, or brand.</p><a class="btn" href="#ads-custom">Propose a custom campaign</a><a class="btn ghost" href="#track">Track an application</a></div>
+<div class="note">Payments are not yet enabled. Every advertisement is subject to approval. No prices, audience figures or impressions are promised.</div>
+<h2>Option A: Ready-made packages</h2><div class="grid w">${[['Starter','Small businesses and new creators','Smaller placement in content listings'],['Standard','Growing brands and projects','Placement across discovery pages'],['Featured','Launches and major campaigns','Prominent homepage placement']].map(p=>`<div class="card b"><h3>${p[0]}</h3><p><b>Intended for:</b> ${p[1]}</p><p><b>Placement:</b> ${p[2]}</p><p><b>Duration:</b> [agreed per campaign]</p><p><b>Price:</b> [to be set by administrator]</p><a class="btn sm" href="#ads-custom">Apply for ${p[0]}</a></div>`).join('')}</div>`,
+'ads-custom':()=>`<h1 style="font-size:2.4rem">Custom advertising campaign</h1><div class="note"><b>Approval and refunds.</b> Every advertisement is subject to approval. Campaign dates are requests until confirmed by the administrator. If your advertisement is rejected, the refund terms will be shown here in full before you pay. [Refund policy text to be finalized.] Payments are not yet enabled.</div>
+<form id="af" novalidate><div class="fg">${[['bn','Business or brand name','text'],['cn','Contact name','text'],['em','Email address','email'],['web','Website or social media link','url'],['bud','Proposed budget','number'],['sd','Preferred start date','date'],['ad','Alternative date','date'],['hl','Advertisement headline','text'],['url','Destination URL','url']].map(f=>`<div><label for="${f[0]}">${f[1]}</label><input id="${f[0]}" type="${f[2]}" ${f[0]==='bud'?'min="1"':''}><div class="err"></div></div>`).join('')}
+<div><label for="cat">Advertising category</label><select id="cat"><option value="">Choose…</option>${['Entertainment','Art and creativity','Fashion and beauty','Technology and AI','Small businesses','Education','Gaming'].map(x=>`<option>${x}</option>`).join('')}</select><div class="err"></div></div>
+<div><label for="pl">Preferred placement</label><select id="pl"><option value="">Choose…</option><option>Homepage banner</option><option>Movie listings</option><option>Shorts feed</option><option>Stories page</option></select><div class="err"></div></div>
+<div><label for="fl">Promotional image or video (JPG, PNG, MP4; max 10 MB)</label><input id="fl" type="file" accept="image/jpeg,image/png,video/mp4"><div class="err"></div></div></div>
+<label for="ds">Description</label><textarea id="ds" rows="3"></textarea><div class="err"></div><label for="ai">Additional instructions</label><textarea id="ai" rows="2"></textarea>
+<button class="btn" style="margin-top:14px">Review campaign</button></form><div id="rv"></div>`,
+track:()=>`<h1 style="font-size:2.4rem">Track your application</h1>${demo}<form id="tf" style="max-width:420px"><label for="rf">Reference number</label><input id="rf" placeholder="WFX-2026-0001"><div class="err" id="te"></div><label for="tm">Email used on the application</label><input id="tm" type="email"><button class="btn" style="margin-top:12px">Check status</button></form><div id="tr"></div><p style="color:var(--mu);font-size:.88rem">Planned email notices: application received, approved, rejected, scheduled, changes requested.</p>`,
+admin:()=>`<h1 style="font-size:2.4rem">Administrator dashboard</h1><div class="note"><b>Restricted area.</b> In production this page requires administrator authentication enforced by a server, and it is not linked from the public site. A front-end page cannot secure it. The data below is fake sample data shown only for design review.</div><button class="btn ghost" id="ad-on">Show sample dashboard</button><div id="ad"></div>`,
+signin:()=>`<h1 style="font-size:2.4rem">Sign in</h1>${demo}<form class="ph" style="max-width:380px"><label for="e1">Email</label><input id="e1" type="email"><label for="p1">Password</label><input id="p1" type="password"><button class="btn" style="margin-top:12px">Sign in</button></form>`,
+join:()=>`<h1 style="font-size:2.4rem">Join as a Creator</h1>${demo}<form class="ph" style="max-width:480px"><label for="j1">Display name</label><input id="j1"><label for="j2">Email</label><input id="j2" type="email"><label for="j3">What do you create?</label><select id="j3"><option>AI movies</option><option>Short videos</option><option>Written stories</option><option>Animation</option></select><button class="btn" style="margin-top:12px">Apply</button></form>`
+};
+const STAT=['Draft','Awaiting Payment','Payment Verification','Awaiting Review','Changes Requested','Approved','Scheduled','Live','Completed','Rejected','Refund Pending','Refunded'];
+function route(){const h=(location.hash||'#home').slice(1),[k,a]=h.split('/');let key=k==='ads-custom'?'ads-custom':k;const f=V[key]||V.home;
+app.innerHTML=f(a);window.scrollTo(0,0);app.focus({preventScroll:true});
+const nk=['watch'].includes(k)?'movies':k==='creator'?'creators':k==='read'?'stories':k==='ads-custom'||k==='track'?'ads':k;
+$('#nav').innerHTML=NAV.map(n=>`<a href="#${n[0]}" class="${n[0]===nk?'on':''}${n[0]==='join'?' cta':''}" ${n[0]===nk?'aria-current="page"':''}>${n[1]}</a>`).join('');
+bind(k,a)}
+function bind(k){
+document.querySelectorAll('form.ph').forEach(f=>f.onsubmit=e=>{e.preventDefault();toast('Accounts are not connected yet')});
+if(k==='watch'){let n=0;$('#like').onclick=function(){n=n?0:1;this.setAttribute('aria-pressed',!!n);this.firstChild.nodeValue=n?'♥ Liked ':'♡ Like ';$('span',this).textContent=n};
+$('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ct').value.trim();$('#ce').textContent=v?'':'Write a comment first.';if(!v)return;const d=document.createElement('div');d.className='card b';d.style.marginTop='8px';d.innerHTML='<strong>You (demo)</strong><p></p>';d.lastChild.textContent=v;$('#cl').prepend(d);$('#ct').value=''}}
+if(k==='community')document.querySelectorAll('.lk').forEach(b=>b.onclick=()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);const s=$('span',b);s.textContent=+s.textContent+(on?1:-1)});
+if(k==='creator')$('#fol').onclick=function(){const on=this.getAttribute('aria-pressed')!=='true';this.setAttribute('aria-pressed',on);this.textContent=on?'Following':'Follow'};
+if(k==='rewards'){const b=$('#claim');b.onclick=()=>{const t=new Date().toISOString().slice(0,10);if(st('daily')===t)return;st('daily',t);st('pts',pts()+10);const H=hist();H.unshift({d:t,a:'Daily reward (illustrative)',p:10});st('hist',H);route();toast('10 demo points added')}}
+if(k==='ads-custom')$('#af').onsubmit=e=>{e.preventDefault();const req=['bn','cn','em','web','bud','sd','hl','url','cat','pl','ds'];let ok=true;
+document.querySelectorAll('#af .err').forEach(x=>x.textContent='');document.querySelectorAll('#af .bad').forEach(x=>x.classList.remove('bad'));
+const bad=(id,m)=>{ok=false;const el=$('#'+id);el.classList.add('bad');el.nextElementSibling.textContent=m};
+req.forEach(id=>{if(!$('#'+id).value.trim())bad(id,'Required.')});
+const em=$('#em');if(em.value&&!/^\S+@\S+\.\S+$/.test(em.value))bad('em','Enter a valid email.');
+['web','url'].forEach(id=>{const v=$('#'+id).value;if(v&&!/^https?:\/\/\S+\.\S+/.test(v))bad(id,'Start with http:// or https://.')});
+if($('#bud').value&&+$('#bud').value<=0)bad('bud','Enter a positive amount.');
+const fl=$('#fl').files[0];if(fl&&(!['image/jpeg','image/png','video/mp4'].includes(fl.type)||fl.size>10485760))bad('fl','Use JPG, PNG or MP4 under 10 MB.');
+if(!ok){toast('Fix the highlighted fields');return}
+const g=id=>$('#'+id).value||'—',x=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('#rv').innerHTML=`<h2 style="margin-top:24px">Review your campaign</h2><div class="card b">${[['Brand','bn'],['Contact','cn'],['Email','em'],['Link','web'],['Category','cat'],['Budget','bud'],['Placement','pl'],['Start (requested)','sd'],['Alternative','ad'],['Headline','hl'],['Destination','url'],['Description','ds']].map(r=>`<p><b>${r[0]}:</b> ${x(g(r[1]))}</p>`).join('')}<p><b>File:</b> ${fl?x(fl.name):'—'}</p></div><div class="note">Payments are not yet enabled, so nothing can be submitted for real. Real submission needs a backend, secure file storage and a verified payment provider.</div><button class="btn" id="sub">Submit (demo mode)</button><button class="btn ghost" onclick="document.getElementById('rv').innerHTML=''">Edit</button>`;
+$('#sub').onclick=()=>{$('#rv').innerHTML=`<div class="card b"><h3>Demo submission only</h3><p>Nothing was sent or saved. A real application would receive a reference such as <b>WFX-2026-0001</b> and start as “Draft”.</p><a class="btn sm" href="#track">See tracking</a></div>`};$('#rv').scrollIntoView({behavior:'smooth'})}
+if(k==='track')$('#tf').onsubmit=e=>{e.preventDefault();const ok=/^WFX-\d{4}-\d{4}$/i.test($('#rf').value.trim());$('#te').textContent=ok?'':'Use the format WFX-2026-0001.';if(!ok){$('#tr').innerHTML='';return}
+const cur=3;$('#tr').innerHTML=`<h3>Sample status for ${$('#rf').value.toUpperCase()}</h3><div class="steps">${STAT.map((s,i)=>`<span class="${i<cur?'d':i===cur?'c':''}">${s}</span>`).join('')}</div><p style="color:var(--mu)">Sample result. Real lookups must verify the advertiser’s identity so applications stay private.</p>`}
+if(k==='admin')$('#ad-on').onclick=()=>{$('#ad').innerHTML=`<h2 style="margin-top:20px">Applications (sample data)</h2><div class="wrap"><table><tr><th>Ref</th><th>Brand</th><th>Category</th><th>Package / budget</th><th>Payment</th><th>Txn ref</th><th>Status</th></tr><tr><td>WFX-2026-0001</td><td>Sample Studio</td><td>Technology and AI</td><td>Custom · [budget]</td><td>Payment verified</td><td>TXN-DEMO-1</td><td>Awaiting Review</td></tr><tr><td>WFX-2026-0002</td><td>Example Apparel</td><td>Fashion and beauty</td><td>Standard</td><td>Payment initiated</td><td>—</td><td>Payment Verification</td></tr></table></div>
+<div class="card b" style="margin-top:16px"><h3>Review WFX-2026-0001</h3><p>Contact: demo@example.com · Placement: Homepage banner</p><div class="player" style="aspect-ratio:16/9;max-width:420px">Uploaded creative appears here for inspection</div><label for="rr">Rejection reason or change request</label><textarea id="rr" rows="2"></textarea><label for="sch">Confirm schedule</label><input id="sch" type="date">
+<p><button class="btn sm" data-a="Approved">Approve</button><button class="btn sm ghost" data-a="Rejected">Reject</button><button class="btn sm ghost" data-a="Changes requested">Request changes</button><button class="btn sm ghost" data-a="Scheduled">Schedule</button></p><p style="color:var(--mu);font-size:.85rem">Refund status: Not applicable. Refunds would go through the payment provider or an explicit admin process.</p></div><h3 style="margin-top:16px">Action log</h3><ul id="lg"><li>Sample log. Actions below are not saved.</li></ul>`;
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const li=document.createElement('li');li.textContent=new Date().toLocaleTimeString()+' · '+b.dataset.a+' (demo)';$('#lg').prepend(li)})}}
+addEventListener('hashchange',route);route();
+</script></body></html>
