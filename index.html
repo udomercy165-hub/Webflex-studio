@@ -55,9 +55,11 @@ table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:#111;padding:10px 18px;border-radius:99px;z-index:50;font-weight:700}
 .shorts{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px}.shorts .card{flex:0 0 min(280px,78vw);scroll-snap-align:center}
 @media(prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
+#mb{display:none;margin-left:auto;background:var(--sf2);border:1px solid var(--ln);border-radius:10px;padding:8px 14px;font-size:1.2rem;cursor:pointer}
+@media(max-width:820px){#mb{display:block}nav{display:none;position:absolute;top:100%;left:0;right:0;margin-left:0;flex-direction:column;overflow-x:visible;overflow-y:auto;max-height:75vh;background:#120e1a;border-bottom:1px solid var(--ln);padding:8px 12px 14px}header.open nav{display:flex}nav a{padding:14px;font-size:1rem}}
 footer{border-top:1px solid var(--ln);padding:24px 16px;text-align:center;color:var(--mu);font-size:.85rem}
 </style></head><body>
-<header><a class="logo" href="#home">WEBFLEX STUDIO</a><nav id="nav" aria-label="Main"></nav></header>
+<header><a class="logo" href="#home">WEBFLEX STUDIO</a><button id="mb" aria-label="Open menu" aria-expanded="false" aria-controls="nav">&#9776;</button><nav id="nav" aria-label="Main"></nav></header>
 <main id="app" tabindex="-1"></main>
 <footer>Webflex Studio is a front-end prototype. All films, creators, stories and figures are fictional demonstration content. Sign-in is connected; streaming, payments and everything else remain demonstrations.</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -138,9 +140,10 @@ signin:()=>USER?ACCT():`<h1 style="font-size:2.4rem">Sign in</h1><form id="sf" s
 join:()=>USER?ACCT():`<h1 style="font-size:2.4rem">Join as a Creator</h1><form id="jf" style="max-width:480px" novalidate><label for="j1">Display name</label><input id="j1" autocomplete="nickname"><label for="j2">Email</label><input id="j2" type="email" autocomplete="email"><label for="j4">Password (at least 8 characters)</label><input id="j4" type="password" autocomplete="new-password"><label for="j3">What do you create?</label><select id="j3"><option>AI movies</option><option>Short videos</option><option>Written stories</option><option>Animation</option></select><div class="err" id="jm" role="status"></div><button class="btn" style="margin-top:12px">Create account</button></form><p style="color:var(--mu);font-size:.88rem">Creating an account does not publish anything. Creator tools are not built yet.</p>`
 };
 const SB_URL='https://ndbqhmkjvjzkbcjriawj.supabase.co',SB_KEY='sb_publishable_0QJjX5Mc0rsmtdul4GvQQw_kP9BHuhF';
-let USER=null;
+let USER=null,ADMIN=false;
 const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
-if(sb)sb.auth.onAuthStateChange((ev,ses)=>{USER=ses?ses.user:null;if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(ev))setTimeout(route,0)});
+if(sb)sb.auth.onAuthStateChange((ev,ses)=>{USER=ses?ses.user:null;if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(ev))setTimeout(refreshRole,0)});
+async function refreshRole(){ADMIN=false;if(sb&&USER){try{const q=await sb.from('profiles').select('role').eq('id',USER.id).maybeSingle();ADMIN=!!(q.data&&q.data.role==='admin')}catch(e){}}route()}
 const ACCT=()=>`<h1 style="font-size:2.4rem">Account</h1><p>Signed in as <b id="ue"></b></p><button class="btn" id="so">Sign out</button>`;
 async function gate(cb){const box=document.getElementById('app'),keep=box.innerHTML,hd='<h1 style="font-size:2.4rem">Administrator dashboard</h1>';
  if(!sb){box.innerHTML=hd+'<p>The sign-in service did not load.</p>';return}
@@ -173,9 +176,9 @@ function authBind(k){
 }
 const STAT=['Draft','Awaiting Payment','Payment Verification','Awaiting Review','Changes Requested','Approved','Scheduled','Live','Completed','Rejected','Refund Pending','Refunded'];
 function route(){const h=(location.hash||'#home').slice(1),[k,a]=h.split('/');let key=k==='ads-custom'?'ads-custom':k;const f=V[key]||V.home;
-app.innerHTML=f(a);window.scrollTo(0,0);app.focus({preventScroll:true});
+document.querySelector('header').classList.remove('open');$('#mb').setAttribute('aria-expanded','false');app.innerHTML=f(a);window.scrollTo(0,0);app.focus({preventScroll:true});
 const nk=['watch'].includes(k)?'movies':k==='creator'?'creators':k==='read'?'stories':k==='ads-custom'||k==='track'?'ads':k;
-$('#nav').innerHTML=NAV.map(n=>`<a href="#${n[0]}" class="${n[0]===nk?'on':''}${n[0]==='join'?' cta':''}" ${n[0]===nk?'aria-current="page"':''}>${n[0]==='signin'&&USER?'Account':n[1]}</a>`).join('');
+$('#nav').innerHTML=(ADMIN?NAV.concat([['admin','Admin']]):NAV).map(n=>`<a href="#${n[0]}" class="${n[0]===nk?'on':''}${n[0]==='join'?' cta':''}" ${n[0]===nk?'aria-current="page"':''}>${n[0]==='signin'&&USER?'Account':n[1]}</a>`).join('');
 bind(k,a)}
 function bind(k){authBind(k);
 document.querySelectorAll('form.ph').forEach(f=>f.onsubmit=e=>{e.preventDefault();toast('Accounts are not connected yet')});
@@ -202,5 +205,6 @@ if(k==='admin')gate(()=>$('#ad-on').onclick=()=>{$('#ad').innerHTML=`<h2 style="
 <div class="card b" style="margin-top:16px"><h3>Review WFX-2026-0001</h3><p>Contact: demo@example.com · Placement: Homepage banner</p><div class="player" style="aspect-ratio:16/9;max-width:420px">Uploaded creative appears here for inspection</div><label for="rr">Rejection reason or change request</label><textarea id="rr" rows="2"></textarea><label for="sch">Confirm schedule</label><input id="sch" type="date">
 <p><button class="btn sm" data-a="Approved">Approve</button><button class="btn sm ghost" data-a="Rejected">Reject</button><button class="btn sm ghost" data-a="Changes requested">Request changes</button><button class="btn sm ghost" data-a="Scheduled">Schedule</button></p><p style="color:var(--mu);font-size:.85rem">Refund status: Not applicable. Refunds would go through the payment provider or an explicit admin process.</p></div><h3 style="margin-top:16px">Action log</h3><ul id="lg"><li>Sample log. Actions below are not saved.</li></ul>`;
 document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const li=document.createElement('li');li.textContent=new Date().toLocaleTimeString()+' · '+b.dataset.a+' (demo)';$('#lg').prepend(li)})})}
+$('#mb').onclick=()=>{const o=document.querySelector('header').classList.toggle('open');$('#mb').setAttribute('aria-expanded',o)};
 addEventListener('hashchange',route);route();
 </script></body></html>
