@@ -59,7 +59,8 @@ footer{border-top:1px solid var(--ln);padding:24px 16px;text-align:center;color:
 </style></head><body>
 <header><a class="logo" href="#home">WEBFLEX STUDIO</a><nav id="nav" aria-label="Main"></nav></header>
 <main id="app" tabindex="-1"></main>
-<footer>Webflex Studio is a front-end prototype. All films, creators, stories and figures are fictional demonstration content. No backend, accounts, streaming or payments are connected yet.</footer>
+<footer>Webflex Studio is a front-end prototype. All films, creators, stories and figures are fictional demonstration content. Sign-in is connected; streaming, payments and everything else remain demonstrations.</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const $=(s,r=document)=>r.querySelector(s),app=$('#app');
 const hue=(h,h2)=>`background:linear-gradient(160deg,hsl(${h} 60% 35%),hsl(${h2||h+60} 70% 12%))`;
@@ -132,17 +133,51 @@ ads:()=>`<div class="hero"><h1>PROMOTE YOUR BRAND ON WEBFLEX STUDIO.</h1><p>Disc
 <label for="ds">Description</label><textarea id="ds" rows="3"></textarea><div class="err"></div><label for="ai">Additional instructions</label><textarea id="ai" rows="2"></textarea>
 <button class="btn" style="margin-top:14px">Review campaign</button></form><div id="rv"></div>`,
 track:()=>`<h1 style="font-size:2.4rem">Track your application</h1>${demo}<form id="tf" style="max-width:420px"><label for="rf">Reference number</label><input id="rf" placeholder="WFX-2026-0001"><div class="err" id="te"></div><label for="tm">Email used on the application</label><input id="tm" type="email"><button class="btn" style="margin-top:12px">Check status</button></form><div id="tr"></div><p style="color:var(--mu);font-size:.88rem">Planned email notices: application received, approved, rejected, scheduled, changes requested.</p>`,
-admin:()=>`<h1 style="font-size:2.4rem">Administrator dashboard</h1><div class="note"><b>Restricted area.</b> In production this page requires administrator authentication enforced by a server, and it is not linked from the public site. A front-end page cannot secure it. The data below is fake sample data shown only for design review.</div><button class="btn ghost" id="ad-on">Show sample dashboard</button><div id="ad"></div>`,
-signin:()=>`<h1 style="font-size:2.4rem">Sign in</h1>${demo}<form class="ph" style="max-width:380px"><label for="e1">Email</label><input id="e1" type="email"><label for="p1">Password</label><input id="p1" type="password"><button class="btn" style="margin-top:12px">Sign in</button></form>`,
-join:()=>`<h1 style="font-size:2.4rem">Join as a Creator</h1>${demo}<form class="ph" style="max-width:480px"><label for="j1">Display name</label><input id="j1"><label for="j2">Email</label><input id="j2" type="email"><label for="j3">What do you create?</label><select id="j3"><option>AI movies</option><option>Short videos</option><option>Written stories</option><option>Animation</option></select><button class="btn" style="margin-top:12px">Apply</button></form>`
+admin:()=>`<h1 style="font-size:2.4rem">Administrator dashboard</h1><div class="note"><b>Restricted area.</b> Access requires a signed-in account with the admin role in Supabase. The data below is still fake sample data. Real applications need their own protected tables before any private data is shown here.</div><button class="btn ghost" id="ad-on">Show sample dashboard</button><div id="ad"></div>`,
+signin:()=>USER?ACCT():`<h1 style="font-size:2.4rem">Sign in</h1><form id="sf" style="max-width:380px" novalidate><label for="e1">Email</label><input id="e1" type="email" autocomplete="email"><label for="p1">Password</label><input id="p1" type="password" autocomplete="current-password"><div class="err" id="sm" role="status"></div><button class="btn" style="margin-top:12px">Sign in</button></form><p style="color:var(--mu)">New here? <a href="#join" style="color:var(--ac)">Join as a Creator</a></p>`,
+join:()=>USER?ACCT():`<h1 style="font-size:2.4rem">Join as a Creator</h1><form id="jf" style="max-width:480px" novalidate><label for="j1">Display name</label><input id="j1" autocomplete="nickname"><label for="j2">Email</label><input id="j2" type="email" autocomplete="email"><label for="j4">Password (at least 8 characters)</label><input id="j4" type="password" autocomplete="new-password"><label for="j3">What do you create?</label><select id="j3"><option>AI movies</option><option>Short videos</option><option>Written stories</option><option>Animation</option></select><div class="err" id="jm" role="status"></div><button class="btn" style="margin-top:12px">Create account</button></form><p style="color:var(--mu);font-size:.88rem">Creating an account does not publish anything. Creator tools are not built yet.</p>`
 };
+const SB_URL='https://ndbqhmkjvjzkbcjriawj.supabase.co',SB_KEY='sb_publishable_0QJjX5Mc0rsmtdul4GvQQw_kP9BHuhF';
+let USER=null;
+const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
+if(sb)sb.auth.onAuthStateChange((ev,ses)=>{USER=ses?ses.user:null;if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(ev))setTimeout(route,0)});
+const ACCT=()=>`<h1 style="font-size:2.4rem">Account</h1><p>Signed in as <b id="ue"></b></p><button class="btn" id="so">Sign out</button>`;
+async function gate(cb){const box=document.getElementById('app'),keep=box.innerHTML,hd='<h1 style="font-size:2.4rem">Administrator dashboard</h1>';
+ if(!sb){box.innerHTML=hd+'<p>The sign-in service did not load.</p>';return}
+ box.innerHTML=hd+'<p>Checking access…</p>';
+ const r=await sb.auth.getSession(),ses=r.data&&r.data.session;
+ if(!ses){box.innerHTML=hd+'<div class="note">Sign in with an administrator account to continue.</div><a class="btn" href="#signin">Sign in</a>';return}
+ const q=await sb.from('profiles').select('role').eq('id',ses.user.id).maybeSingle();
+ if(q.error||!q.data||q.data.role!=='admin'){box.innerHTML=hd+'<div class="note">This account does not have administrator access.</div>';return}
+ box.innerHTML=keep;cb()}
+function authBind(k){
+ const say=(id,t,ok)=>{const e=$('#'+id);if(e){e.textContent=t;e.style.color=ok?'#5fc98f':'#ff8fae'}};
+ if(k!=='signin'&&k!=='join')return;
+ const ue=$('#ue');if(ue&&USER)ue.textContent=USER.email;
+ const so=$('#so');if(so)so.onclick=async()=>{await sb.auth.signOut();location.hash='#home'};
+ const sf=$('#sf');if(sf)sf.onsubmit=async e=>{e.preventDefault();
+  if(!sb)return say('sm','The sign-in service did not load. Check your connection.');
+  const em=$('#e1').value.trim(),pw=$('#p1').value;if(!em||!pw)return say('sm','Enter your email and password.');
+  say('sm','Signing in…',true);const r=await sb.auth.signInWithPassword({email:em,password:pw});
+  if(r.error)say('sm',r.error.message);else location.hash='#home'};
+ const jf=$('#jf');if(jf)jf.onsubmit=async e=>{e.preventDefault();
+  if(!sb)return say('jm','The sign-in service did not load. Check your connection.');
+  const nm=$('#j1').value.trim(),em=$('#j2').value.trim(),pw=$('#j4').value;
+  if(!nm)return say('jm','Enter a display name.');
+  if(!/^\S+@\S+\.\S+$/.test(em))return say('jm','Enter a valid email address.');
+  if(pw.length<8)return say('jm','Use a password of at least 8 characters.');
+  say('jm','Creating account…',true);
+  const r=await sb.auth.signUp({email:em,password:pw,options:{data:{display_name:nm,creator_type:$('#j3').value},emailRedirectTo:location.origin+location.pathname}});
+  if(r.error)return say('jm',r.error.message);
+  say('jm',r.data.session?'Account created. You are signed in.':'Account created. Check your email to confirm it, then sign in.',true)};
+}
 const STAT=['Draft','Awaiting Payment','Payment Verification','Awaiting Review','Changes Requested','Approved','Scheduled','Live','Completed','Rejected','Refund Pending','Refunded'];
 function route(){const h=(location.hash||'#home').slice(1),[k,a]=h.split('/');let key=k==='ads-custom'?'ads-custom':k;const f=V[key]||V.home;
 app.innerHTML=f(a);window.scrollTo(0,0);app.focus({preventScroll:true});
 const nk=['watch'].includes(k)?'movies':k==='creator'?'creators':k==='read'?'stories':k==='ads-custom'||k==='track'?'ads':k;
-$('#nav').innerHTML=NAV.map(n=>`<a href="#${n[0]}" class="${n[0]===nk?'on':''}${n[0]==='join'?' cta':''}" ${n[0]===nk?'aria-current="page"':''}>${n[1]}</a>`).join('');
+$('#nav').innerHTML=NAV.map(n=>`<a href="#${n[0]}" class="${n[0]===nk?'on':''}${n[0]==='join'?' cta':''}" ${n[0]===nk?'aria-current="page"':''}>${n[0]==='signin'&&USER?'Account':n[1]}</a>`).join('');
 bind(k,a)}
-function bind(k){
+function bind(k){authBind(k);
 document.querySelectorAll('form.ph').forEach(f=>f.onsubmit=e=>{e.preventDefault();toast('Accounts are not connected yet')});
 if(k==='watch'){let n=0;$('#like').onclick=function(){n=n?0:1;this.setAttribute('aria-pressed',!!n);this.firstChild.nodeValue=n?'♥ Liked ':'♡ Like ';$('span',this).textContent=n};
 $('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ct').value.trim();$('#ce').textContent=v?'':'Write a comment first.';if(!v)return;const d=document.createElement('div');d.className='card b';d.style.marginTop='8px';d.innerHTML='<strong>You (demo)</strong><p></p>';d.lastChild.textContent=v;$('#cl').prepend(d);$('#ct').value=''}}
@@ -163,9 +198,9 @@ $('#rv').innerHTML=`<h2 style="margin-top:24px">Review your campaign</h2><div cl
 $('#sub').onclick=()=>{$('#rv').innerHTML=`<div class="card b"><h3>Demo submission only</h3><p>Nothing was sent or saved. A real application would receive a reference such as <b>WFX-2026-0001</b> and start as “Draft”.</p><a class="btn sm" href="#track">See tracking</a></div>`};$('#rv').scrollIntoView({behavior:'smooth'})}
 if(k==='track')$('#tf').onsubmit=e=>{e.preventDefault();const ok=/^WFX-\d{4}-\d{4}$/i.test($('#rf').value.trim());$('#te').textContent=ok?'':'Use the format WFX-2026-0001.';if(!ok){$('#tr').innerHTML='';return}
 const cur=3;$('#tr').innerHTML=`<h3>Sample status for ${$('#rf').value.toUpperCase()}</h3><div class="steps">${STAT.map((s,i)=>`<span class="${i<cur?'d':i===cur?'c':''}">${s}</span>`).join('')}</div><p style="color:var(--mu)">Sample result. Real lookups must verify the advertiser’s identity so applications stay private.</p>`}
-if(k==='admin')$('#ad-on').onclick=()=>{$('#ad').innerHTML=`<h2 style="margin-top:20px">Applications (sample data)</h2><div class="wrap"><table><tr><th>Ref</th><th>Brand</th><th>Category</th><th>Package / budget</th><th>Payment</th><th>Txn ref</th><th>Status</th></tr><tr><td>WFX-2026-0001</td><td>Sample Studio</td><td>Technology and AI</td><td>Custom · [budget]</td><td>Payment verified</td><td>TXN-DEMO-1</td><td>Awaiting Review</td></tr><tr><td>WFX-2026-0002</td><td>Example Apparel</td><td>Fashion and beauty</td><td>Standard</td><td>Payment initiated</td><td>—</td><td>Payment Verification</td></tr></table></div>
+if(k==='admin')gate(()=>$('#ad-on').onclick=()=>{$('#ad').innerHTML=`<h2 style="margin-top:20px">Applications (sample data)</h2><div class="wrap"><table><tr><th>Ref</th><th>Brand</th><th>Category</th><th>Package / budget</th><th>Payment</th><th>Txn ref</th><th>Status</th></tr><tr><td>WFX-2026-0001</td><td>Sample Studio</td><td>Technology and AI</td><td>Custom · [budget]</td><td>Payment verified</td><td>TXN-DEMO-1</td><td>Awaiting Review</td></tr><tr><td>WFX-2026-0002</td><td>Example Apparel</td><td>Fashion and beauty</td><td>Standard</td><td>Payment initiated</td><td>—</td><td>Payment Verification</td></tr></table></div>
 <div class="card b" style="margin-top:16px"><h3>Review WFX-2026-0001</h3><p>Contact: demo@example.com · Placement: Homepage banner</p><div class="player" style="aspect-ratio:16/9;max-width:420px">Uploaded creative appears here for inspection</div><label for="rr">Rejection reason or change request</label><textarea id="rr" rows="2"></textarea><label for="sch">Confirm schedule</label><input id="sch" type="date">
 <p><button class="btn sm" data-a="Approved">Approve</button><button class="btn sm ghost" data-a="Rejected">Reject</button><button class="btn sm ghost" data-a="Changes requested">Request changes</button><button class="btn sm ghost" data-a="Scheduled">Schedule</button></p><p style="color:var(--mu);font-size:.85rem">Refund status: Not applicable. Refunds would go through the payment provider or an explicit admin process.</p></div><h3 style="margin-top:16px">Action log</h3><ul id="lg"><li>Sample log. Actions below are not saved.</li></ul>`;
-document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const li=document.createElement('li');li.textContent=new Date().toLocaleTimeString()+' · '+b.dataset.a+' (demo)';$('#lg').prepend(li)})}}
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const li=document.createElement('li');li.textContent=new Date().toLocaleTimeString()+' · '+b.dataset.a+' (demo)';$('#lg').prepend(li)})})}
 addEventListener('hashchange',route);route();
 </script></body></html>
