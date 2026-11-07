@@ -275,10 +275,20 @@ async function renderReview(){const box=$('#sr');if(!box)return;
   if(b.dataset.sact==='pub'){r=await sb.from('stories').update({status:'published',edited:false}).eq('id',id);if(!r.error)r=await sb.from('chapters').update({approved:true,edited:false}).eq('story_id',id)}
   else r=await sb.from('stories').update({status:'rejected'}).eq('id',id);
   toast(r.error?r.error.message:(b.dataset.sact==='pub'?'Approved and published':'Story rejected'));if(!r.error)loadAdmin()}}
-async function loadAdmin(){await loadAdminApps();const d=document.createElement('div');d.id='sr';$('#ad').appendChild(d);await renderReview()}
+async function loadAdmin(){await loadAdminApps();const d=document.createElement('div');d.id='sr';$('#ad').appendChild(d);await renderReview();const d2=document.createElement('div');d2.id='sa';$('#ad').appendChild(d2);await renderAll()}
 async function loadHomeStories(){const el=$('#hs');if(!el||!sb)return;
  const q=await sb.from('stories').select('id,title,genre,description,author_name,cover_url').eq('status','published').order('created_at',{ascending:false}).limit(6);
  if(q.data&&q.data.length)el.innerHTML=q.data.map(s=>`<a class="card b" href="#story/${s.id}">${cov(s.cover_url)}<strong>${esc(s.title)}</strong><p>${esc(s.genre)} · ${esc(s.author_name||'')}</p></a>`).join('')}
+async function renderAll(){const box=$('#sa');if(!box)return;
+ const q=await sb.from('stories').select('id,title,genre,author_name,status,cover_url').order('created_at',{ascending:false}),L=q.data||[];
+ box.innerHTML=`<h2 style="margin-top:28px">All stories (${L.length})</h2>`+(L.map(s=>`<div class="card b" data-sid="${s.id}" style="margin-bottom:12px"><div style="max-width:140px">${cov(s.cover_url)}</div><strong>${esc(s.title)}</strong><p>${esc(s.genre)} · ${esc(s.author_name||'')}</p><label>Status</label><select class="ss">${opts(['pending','published','rejected'],s.status)}</select><label>Replace cover (2:3, JPG or PNG, up to 2 MB)</label><input type="file" class="sf" accept="image/jpeg,image/png"><div class="err"></div><button class="btn sm" data-sact="save">Save</button></div>`).join('')||'<p>No stories yet.</p>');
+ box.onclick=async e=>{const b=e.target.closest('button[data-sact]');if(!b)return;const c=b.closest('[data-sid]'),id=c.dataset.sid,f=$('.sf',c).files[0],er=$('.err',c),upd={status:$('.ss',c).value};er.textContent='';
+  if(f){if(!['image/jpeg','image/png'].includes(f.type)||f.size>2097152){er.textContent='Use JPG or PNG, up to 2 MB.';return}
+   const dm=await imgSize(f);if(!dm||Math.abs(dm.w/dm.h-2/3)>0.02||dm.w<400){er.textContent='Cover must be portrait 2:3, at least 400 pixels wide, for example 800 × 1200.';return}
+   const path=USER.id+'/'+Date.now()+(f.type==='image/png'?'.png':'.jpg'),up=await sb.storage.from('covers').upload(path,f,{contentType:f.type});
+   if(up.error){er.textContent=up.error.message;return}upd.cover_url=sb.storage.from('covers').getPublicUrl(path).data.publicUrl}
+  const r=await sb.from('stories').update(upd).eq('id',id);
+  toast(r.error?r.error.message:'Story saved'+(upd.cover_url?' with the new cover':''));if(!r.error)loadAdmin()}}
 const STAT=['Draft','Awaiting Payment','Payment Verification','Awaiting Review','Changes Requested','Approved','Scheduled','Live','Completed','Rejected','Refund Pending','Refunded'];
 function route(){const h=(location.hash||'#home').slice(1),[k,a]=h.split('/');let key=k==='ads-custom'?'ads-custom':k;const f=V[key]||V.home;
 document.querySelector('header').classList.remove('open');$('#mb').setAttribute('aria-expanded','false');app.innerHTML=f(a);window.scrollTo(0,0);app.focus({preventScroll:true});
