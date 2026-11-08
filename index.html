@@ -140,8 +140,8 @@ const SB_URL='https://ndbqhmkjvjzkbcjriawj.supabase.co',SB_KEY='sb_publishable_0
 let USER=null,ADMIN=false;
 const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
 if(sb)sb.auth.onAuthStateChange((ev,ses)=>{USER=ses?ses.user:null;if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(ev))setTimeout(refreshRole,0)});
-async function refreshRole(){ADMIN=false;if(sb&&USER){try{const q=await sb.from('profiles').select('role').eq('id',USER.id).maybeSingle();ADMIN=!!(q.data&&q.data.role==='admin')}catch(e){}}route()}
-const ACCT=()=>`<h1 style="font-size:2.4rem">Account</h1><p>Signed in as <b id="ue"></b></p><button class="btn" id="so">Sign out</button><div id="cr" style="margin-top:16px"></div>`;
+async function refreshRole(){ADMIN=false;if(sb&&USER){try{const q=await sb.from('profiles').select('role').eq('id',USER.id).maybeSingle();ADMIN=!!(q.data&&q.data.role==='admin')}catch(e){}}route();if(USER)loadNotes()}
+const ACCT=()=>`<h1 style="font-size:2.4rem">Account</h1><p>Signed in as <b id="ue"></b></p><button class="btn" id="so">Sign out</button><div id="cr" style="margin-top:16px"></div><div id="nl"></div><div id="vf"></div>`;
 async function gate(cb){const box=document.getElementById('app'),keep=box.innerHTML,hd='<h1 style="font-size:2.4rem">Administrator dashboard</h1>';
  if(!sb){box.innerHTML=hd+'<p>The sign-in service did not load.</p>';return}
  box.innerHTML=hd+'<p>Checking access…</p>';
@@ -153,7 +153,7 @@ async function gate(cb){const box=document.getElementById('app'),keep=box.innerH
 function authBind(k){
  const say=(id,t,ok)=>{const e=$('#'+id);if(e){e.textContent=t;e.style.color=ok?'#5fc98f':'#ff8fae'}};
  if(k!=='signin'&&k!=='join')return;
- const ue=$('#ue');if(ue&&USER)ue.textContent=USER.email;
+ const ue=$('#ue');if(ue&&USER)ue.textContent=USER.email;if($('#vf'))loadVerify();
  const so=$('#so');if(so)so.onclick=async()=>{await sb.auth.signOut();location.hash='#home'};
  const cr=$('#cr');if(cr&&USER)sb.from('profiles').select('country').eq('id',USER.id).maybeSingle().then(r=>{if(!r.data)return;if(r.data.country){cr.innerHTML='<p>Region: '+esc(r.data.country)+'</p>';return}
   cr.innerHTML=`<div class="note">Please tell us your country or region.</div><select id="cs2"><option value="">Choose…</option>${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select><button class="btn sm" id="cs3" style="margin-top:8px">Save</button>`;
@@ -218,6 +218,8 @@ async function loadAdminApps(){const el=$('#ad');
    await sb.from('ad_applications').update({payment_status:'verified'}).eq('id',id);
    r=await sb.from('ads').insert({application_id:id,title:rec.headline,body:rec.description,destination_url:rec.destination_url,paid:true,reward:{Starter:2,Standard:3,Featured:5,Custom:10}[rec.package],starts_on:d1,ends_on:d2});
    if(!r.error)await sb.from('ad_applications').update({status:'Scheduled'}).eq('id',id)}
+  if(!r.error&&b.dataset.act==='save'&&$('.st',c).value!==rec.status)await notify(rec.user_id,'Your ad application '+rec.ref+' is now: '+$('.st',c).value+($('.nt',c).value?'. Note: '+$('.nt',c).value:''));
+  if(!r.error&&b.dataset.act!=='save')await notify(rec.user_id,'Your ad '+rec.ref+' has been scheduled from '+$('.d1',c).value+' to '+$('.d2',c).value+'.');
   toast(r.error?r.error.message:(b.dataset.act==='save'?'Saved. Status: '+$('.st',c).value+', payment: '+$('.pm',c).value:'Ad scheduled from '+$('.d1',c).value+' to '+$('.d2',c).value));if(!r.error)loadAdmin()}}
 async function loadRewards(){const el=$('#rw');
  if(!sb||!USER){el.innerHTML='<div class="note">Sign in to collect and spend Webflex Points. <a href="#signin" style="color:var(--ac)">Sign in</a></div>';return}
@@ -278,16 +280,17 @@ async function loadWrite(){const el=$('#wr');
    if(r2.error)return say(r2.error.message)}
   toast('Saved. New stories and chapters wait for approval.');loadWrite()}}
 async function renderReview(){const box=$('#sr');if(!box)return;
- const q=await sb.from('stories').select('id,title,genre,author_name,cover_url,status,edited,deletion_requested,chapters(id,number,title,body,cost,approved,edited)').order('created_at',{ascending:false});
+ const q=await sb.from('stories').select('id,author_id,title,genre,author_name,cover_url,status,edited,deletion_requested,chapters(id,number,title,body,cost,approved,edited)').order('created_at',{ascending:false});
  const ou=await sb.from('story_outlines').select('story_id,outline'),OM={};(ou.data||[]).forEach(o=>{OM[o.story_id]=o.outline});
  const L=(q.data||[]).filter(s=>s.deletion_requested||(s.status!=='rejected'&&(s.status==='pending'||s.edited||s.chapters.some(c=>!c.approved||c.edited))));
  box.innerHTML=`<h2 style="margin-top:28px">Stories to review (${L.length})</h2>`+(L.map(s=>`<div class="card b" data-sid="${s.id}" style="margin-bottom:12px"><div style="max-width:160px">${cov(s.cover_url)}</div><strong>${esc(s.title)}</strong> <span class="tag">${esc(s.status)}</span>${s.edited?'<span class="tag pm">Edited</span>':''}${s.deletion_requested?'<span class="tag" style="background:#7a1f33">Deletion requested</span>':''}<p>${esc(s.genre)} · ${esc(s.author_name)}</p><p><b>Outline:</b> ${esc(OM[s.id]||'none')}</p>${s.chapters.sort((a,b)=>a.number-b.number).map(c=>`<p><b>Chapter ${c.number}: ${esc(c.title)}</b> (${c.cost?c.cost+' points':'free'}, ${c.approved?'approved':'pending'}${c.edited?', edited':''})<br>${esc((c.body||'').slice(0,300))}…</p>`).join('')}<button class="btn sm" data-sact="pub">Approve and publish</button><button class="btn sm ghost" data-sact="rej">Reject</button>${s.deletion_requested?'<button class="btn sm" style="background:#e04f7a" data-sact="del">Approve deletion</button>':''}</div>`).join('')||'<p>Nothing to review.</p>');
- box.onclick=async e=>{const b=e.target.closest('button[data-sact]');if(!b)return;const id=b.closest('[data-sid]').dataset.sid;let r;
-  if(b.dataset.sact==='del'){if(!confirm('Delete this story and all its chapters for good?'))return;r=await sb.from('stories').delete().eq('id',id);toast(r.error?r.error.message:'Story deleted');if(!r.error)loadAdmin();return}
+ box.onclick=async e=>{const b=e.target.closest('button[data-sact]');if(!b)return;const id=b.closest('[data-sid]').dataset.sid,st=L.find(z=>z.id===id)||{};let r;
+  if(b.dataset.sact==='del'){if(!confirm('Delete this story and all its chapters for good?'))return;r=await sb.from('stories').delete().eq('id',id);if(!r.error)await notify(st.author_id,'Your story "'+st.title+'" was deleted as you requested.');toast(r.error?r.error.message:'Story deleted');if(!r.error)loadAdmin();return}
   if(b.dataset.sact==='pub'){r=await sb.from('stories').update({status:'published',edited:false}).eq('id',id);if(!r.error)r=await sb.from('chapters').update({approved:true,edited:false}).eq('story_id',id)}
   else r=await sb.from('stories').update({status:'rejected'}).eq('id',id);
+  if(!r.error)await notify(st.author_id,b.dataset.sact==='pub'?'Your story "'+st.title+'" has been approved and published.':'Your story "'+st.title+'" was not approved. Please read the writing rules and edit it.');
   toast(r.error?r.error.message:(b.dataset.sact==='pub'?'Approved and published':'Story rejected'));if(!r.error)loadAdmin()}}
-async function loadAdmin(){await loadAdminApps();const d=document.createElement('div');d.id='sr';$('#ad').appendChild(d);await renderReview();const d2=document.createElement('div');d2.id='sa';$('#ad').appendChild(d2);await renderAll()}
+async function loadAdmin(){await loadAdminApps();const d=document.createElement('div');d.id='sr';$('#ad').appendChild(d);await renderReview();const d2=document.createElement('div');d2.id='sa';$('#ad').appendChild(d2);await renderAll();const d3=document.createElement('div');d3.id='vr';$('#ad').appendChild(d3);await renderVerify()}
 async function loadHomeStories(){const el=$('#hs');if(!el||!sb)return;
  const q=await sb.from('stories').select('id,title,genre,description,author_name,cover_url').eq('status','published').order('created_at',{ascending:false}).limit(6);
  if(q.data&&q.data.length)el.innerHTML=q.data.map(s=>`<a class="card b" href="#story/${s.id}">${cov(s.cover_url)}<strong>${esc(s.title)}</strong><p>${esc(s.genre)} · ${esc(s.author_name||'')}</p><p class="cl">${esc(s.description)}</p></a>`).join('')}
@@ -307,6 +310,36 @@ async function loadStats(){const el=$('#st');if(!el)return;
  (a.data||[]).forEach(r=>{(by[r.story_title]=by[r.story_title]||[]).push(r)});
  (g.data||[]).forEach(x=>{(RG[x.story_id]=RG[x.story_id]||[]).push(x)});
  el.innerHTML='<h2 style="margin-top:28px">Your reader insight</h2>'+(Object.keys(by).map(t=>{const R=by[t],mx=Math.max(1,...R.map(r=>r.readers)),rg=RG[R[0].story_id]||[],tot=rg.reduce((n,x)=>n+x.readers,0);return `<div class="card b" style="margin-bottom:12px"><strong>${esc(t)}</strong><p>${R.filter(r=>r.approved).length} published chapters</p>${R.map(r=>`<p>Chapter ${r.chapter_number}${r.approved?'':' (pending)'}: ${r.readers} readers<span class="bar" style="display:block"><i style="width:${r.readers/mx*100}%"></i></span></p>`).join('')}${tot?`<p><b>Readers by region:</b> ${rg.map(x=>esc(x.country)+' '+Math.round(x.readers/tot*100)+'%').join(' · ')}</p>`:''}</div>`}).join('')||'<p>No readers yet. Counts appear as signed-in readers open your chapters.</p>')}
+const CONSENT='I agree that Webflex Studio may collect photos of my ID and a photo of my face only to confirm that I own this account before payments. Only the Webflex administrator can see them, they are deleted within 30 days, and they will not be used for any other purpose.';
+const DOCS=['National ID card or slip (for example the NIN in Nigeria)','Ghana Card','Passport','Driver’s licence','Voter’s card','Other government photo ID'];
+async function notify(uid,msg){if(uid&&sb)await sb.from('notifications').insert({user_id:uid,message:msg})}
+async function loadNotes(){const q=await sb.from('notifications').select('message').eq('is_read',false).order('created_at',{ascending:false}).limit(5);
+ const old=$('#nt');if(old)old.remove();if(!q.data||!q.data.length)return;
+ const box=document.createElement('div');box.id='nt';box.setAttribute('role','status');box.style.cssText='position:fixed;top:76px;left:50%;transform:translateX(-50%);width:min(92vw,420px);z-index:40';
+ box.innerHTML=q.data.map(n=>`<div class="card b" style="margin-bottom:8px;border-color:var(--ac)">${esc(n.message)}</div>`).join('')+'<button class="btn sm">Dismiss</button>';
+ document.body.append(box);$('button',box).onclick=async()=>{await sb.rpc('mark_notifications_read');box.remove()}}
+async function loadVerify(){const el=$('#vf');if(!sb||!USER||!el)return;
+ const [v,n]=await Promise.all([sb.from('id_verifications').select('status,images_deleted').eq('user_id',USER.id).order('created_at',{ascending:false}).limit(1),sb.from('notifications').select('message,created_at').order('created_at',{ascending:false}).limit(8)]);
+ const cur=v.data&&v.data[0],open=cur&&cur.status!=='rejected';
+ $('#nl').innerHTML=(n.data||[]).length?'<h3 style="margin-top:20px">Messages</h3>'+n.data.map(m=>`<p>${esc(m.message)} <span style="color:var(--mu)">${esc((m.created_at||'').slice(0,10))}</span></p>`).join(''):'';
+ el.innerHTML='<h3 style="margin-top:20px">Creator verification (optional for now)</h3>'+(cur?`<p>Status: <b>${esc(cur.status)}</b>${cur.images_deleted?' · your photos have been deleted':''}</p>`:'')+(open?'':`<p style="color:var(--mu)">This will be needed before payouts. Choose a government photo ID.</p><form id="vfm" novalidate><label for="vd">ID type</label><select id="vd">${DOCS.map(d=>`<option>${esc(d)}</option>`).join('')}</select><label for="v1">ID photo, front</label><input id="v1" type="file" accept="image/jpeg,image/png"><label for="v2">ID photo, back (if it has one)</label><input id="v2" type="file" accept="image/jpeg,image/png"><label for="v3">Photo of your face</label><input id="v3" type="file" accept="image/jpeg,image/png" capture="user"><label style="display:flex;gap:8px"><input id="vc" type="checkbox" style="width:auto">${esc(CONSENT)}</label><div class="err" id="ve" role="status"></div><button class="btn sm">Submit for verification</button></form>`);
+ const f=$('#vfm');if(f)f.onsubmit=async e=>{e.preventDefault();const say=t=>{$('#ve').textContent=t},F=[$('#v1').files[0],$('#v2').files[0],$('#v3').files[0]];
+  if(!$('#vc').checked)return say('Please tick the consent box.');if(!F[0]||!F[2])return say('Add the front of your ID and a photo of your face.');
+  for(const x of F)if(x&&(!['image/jpeg','image/png'].includes(x.type)||x.size>5242880))return say('Each photo must be JPG or PNG, up to 5 MB.');
+  const P=[];for(let i=0;i<3;i++){const x=F[i];if(!x){P.push(null);continue}const p=USER.id+'/'+Date.now()+'-'+i+(x.type==='image/png'?'.png':'.jpg'),u=await sb.storage.from('id-docs').upload(p,x,{contentType:x.type});if(u.error)return say(u.error.message);P.push(p)}
+  const r=await sb.from('id_verifications').insert({doc_type:$('#vd').value,front_path:P[0],back_path:P[1],selfie_path:P[2],consent_text:CONSENT});
+  if(r.error)return say(r.error.message);toast('Submitted. Only the Webflex administrator can see your photos.');loadVerify()}}
+async function renderVerify(){const box=$('#vr');if(!box)return;
+ const q=await sb.from('id_verifications').select('id,user_id,doc_type,front_path,back_path,selfie_path,status,images_deleted,created_at').order('created_at',{ascending:false}),L=(q.data||[]).filter(v=>!v.images_deleted||v.status==='pending');
+ const ids=[...new Set((q.data||[]).map(v=>v.user_id))],pr=await sb.from('profiles').select('id,display_name,email,country').in('id',ids.length?ids:['00000000-0000-0000-0000-000000000000']),PM={};(pr.data||[]).forEach(p=>{PM[p.id]=p});
+ const over=L.filter(v=>!v.images_deleted&&Date.now()-new Date(v.created_at)>30*864e5).length;
+ box.innerHTML=`<h2 style="margin-top:28px">Creator verification (${L.length})</h2>${over?`<div class="note">${over} submission(s) are older than 30 days. Delete their photos now.</div>`:''}`+(L.map(v=>{const p=PM[v.user_id]||{};return `<div class="card b" data-vid="${v.id}" style="margin-bottom:12px"><strong>${esc(p.display_name)}</strong> <span class="tag">${esc(v.status)}</span><p>${esc(p.email)} · ${esc(p.country||'')} · ${esc(v.doc_type)} · ${esc(v.created_at.slice(0,10))}</p>${v.images_deleted?'<p>Photos deleted.</p>':'<button class="btn sm ghost" data-vact="view">View photos</button><div class="vi"></div><button class="btn sm ghost" data-vact="delimg">Delete photos now</button>'}<button class="btn sm" data-vact="ok">Verify</button><button class="btn sm ghost" data-vact="no">Reject</button></div>`}).join('')||'<p>No submissions.</p>');
+ box.onclick=async e=>{const b=e.target.closest('button[data-vact]');if(!b)return;const c=b.closest('[data-vid]'),id=c.dataset.vid,v=L.find(z=>z.id===id),a=b.dataset.vact;
+  if(a==='view'){const w=$('.vi',c);w.innerHTML='';for(const p of [v.front_path,v.back_path,v.selfie_path]){if(!p)continue;const u=await sb.storage.from('id-docs').createSignedUrl(p,300);if(u.data){const i=document.createElement('img');i.src=u.data.signedUrl;i.style.cssText='max-width:100%;margin:8px 0;border-radius:8px;display:block';w.append(i)}}return}
+  if(a==='delimg'){if(!confirm('Delete these photos for good?'))return;const rm=await sb.storage.from('id-docs').remove([v.front_path,v.back_path,v.selfie_path].filter(Boolean));if(rm.error){toast(rm.error.message);return}const r=await sb.from('id_verifications').update({images_deleted:true,front_path:null,back_path:null,selfie_path:null}).eq('id',id);toast(r.error?r.error.message:'Photos deleted');if(!r.error)loadAdmin();return}
+  const st=a==='ok'?'verified':'rejected',r=await sb.from('id_verifications').update({status:st,decided_at:new Date().toISOString()}).eq('id',id);
+  if(!r.error)await notify(v.user_id,a==='ok'?'Your creator verification was approved.':'Your creator verification was not approved. Please check your photos and submit again.');
+  toast(r.error?r.error.message:'Marked '+st);if(!r.error)loadAdmin()}}
 const STAT=['Draft','Awaiting Payment','Payment Verification','Awaiting Review','Changes Requested','Approved','Scheduled','Live','Completed','Rejected','Refund Pending','Refunded'];
 function route(){const h=(location.hash||'#home').slice(1),[k,a]=h.split('/');let key=k==='ads-custom'?'ads-custom':k;const f=V[key]||V.home;
 document.querySelector('header').classList.remove('open');$('#mb').setAttribute('aria-expanded','false');app.innerHTML=f(a);window.scrollTo(0,0);app.focus({preventScroll:true});
